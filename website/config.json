@@ -2,7 +2,7 @@
   "_readme": "THE file you edit after launch. Changes go live within minutes of saving on GitHub — no code changes, no Chrome Web Store re-review. Leave a value as \"\" (empty) to keep that feature switched off. See docs/0_LAUNCH_PLAN.md for when to fill each one in.",
   "site": {
     "chromeStoreUrl": "",
-    "leadFormEndpoint": "",
+    "leadFormEndpoint": "https://formspree.io/f/mzerokny",
     "contactEmail": "hello@famillos.com",
     "ga4Id": "",
     "metaPixelId": "",
