@@ -9,8 +9,8 @@ export const CONFIG = {
   // Phase 1 — Firebase (docs/1_FIREBASE_SETUP.md). Web API keys are safe to ship;
   // your data is protected by firebase/firestore.rules, not by hiding this key.
   firebase: {
-    apiKey: "YOUR_FIREBASE_WEB_API_KEY",
-    projectId: "YOUR_FIREBASE_PROJECT_ID"
+    apiKey: "AIzaSyCCNdC4l_mB_mRzaAFsklA9W3cSxq1i2KY",
+    projectId: "famillos"
   },
 
   siteUrl: "https://famillos.com",
