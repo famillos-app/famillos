@@ -1,0 +1,20 @@
+{
+  "_readme": "Hand-picked deals. The deploy workflow merges these with live Awin vouchers into deals.json every day. Fields: id, title, store, url, categories (pregnancy, health, nursery, travel, hospital, newborn, feeding, sleep, play, safety), markets (country codes like GB, US, DE, or EU / ALL), benefit (REAL discount text — required for affiliate links), code, expires (YYYY-MM-DD), affiliateUrl (network tracking link). Generic store links per country are built into the app, so only add real offers here.",
+  "_example": {
+    "id": "jl-pushchair-nov",
+    "title": "Pushchairs — 20% off selected",
+    "store": "John Lewis",
+    "url": "https://www.johnlewis.com/",
+    "categories": [
+      "travel"
+    ],
+    "markets": [
+      "GB"
+    ],
+    "benefit": "20% off",
+    "code": "",
+    "expires": "2026-12-01",
+    "affiliateUrl": "https://www.awin1.com/cread.php?awinmid=XXXX&awinaffid=YYYY&ued=..."
+  },
+  "deals": []
+}

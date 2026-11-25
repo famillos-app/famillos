@@ -1,0 +1,43 @@
+{
+  "_readme": "THE file you edit after launch. Changes go live within minutes of saving on GitHub — no code changes, no Chrome Web Store re-review. Leave a value as \"\" (empty) to keep that feature switched off. See docs/0_LAUNCH_PLAN.md for when to fill each one in.",
+  "site": {
+    "chromeStoreUrl": "",
+    "leadFormEndpoint": "",
+    "contactEmail": "hello@famillos.com",
+    "ga4Id": "",
+    "metaPixelId": "",
+    "amazonTags": {
+      "GB": "",
+      "US": "",
+      "DE": "",
+      "FR": "",
+      "IT": "",
+      "ES": ""
+    },
+    "_affiliate_note": "The next five settings are only used on famillos.com list pages (registries and creator lists), where affiliate links are allowed. awinMerchants maps a shop domain to its Awin advertiser ID, for each advertiser that has approved you.",
+    "awinPublisherId": "",
+    "awinMerchants": {
+      "_example_shopdomain.com": "AWIN_MERCHANT_ID"
+    },
+    "skimlinksId": "",
+    "sovrnKey": "",
+    "creatorAmazonTags": {
+      "_example_@babysteps": {
+        "GB": "babysteps-famillos-21",
+        "US": "babysteps-famillos-20"
+      }
+    },
+    "firebase": {
+      "apiKey": "",
+      "projectId": ""
+    }
+  },
+  "extension": {
+    "affiliate": {
+      "sovrnKey": "",
+      "skimlinksId": ""
+    },
+    "placesProxyUrl": "",
+    "notice": ""
+  }
+}

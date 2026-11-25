@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creator baby lists — Famillos</title>
+  <meta name="description" content="Baby must-haves picked by parenting creators: hospital bags, nursery setups, first-year favourites.">
+  <link rel="canonical" href="https://famillos.com/lists.html">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/site.css">
+  <style>
+    .dir { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; margin-top: 36px; }
+    .lc { background: #fff; border-radius: 24px; padding: 22px; box-shadow: 0 0 0 1.5px var(--line); text-decoration: none; color: inherit; transition: transform .2s; display: block; }
+    .lc:hover { transform: translateY(-4px); }
+    .lc .av { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: linear-gradient(135deg, var(--coral), var(--sun)); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 22px; }
+    .lc h3 { font-size: 21px; margin: 14px 0 4px; }
+    .lc .who { color: var(--muted); font-size: 15px; }
+    .lc .n { margin-top: 12px; font-size: 13.5px; font-weight: 700; color: var(--coral); }
+    .soon { text-align: center; padding: 50px 20px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="Famillos home"><img src="assets/logo.svg" alt="">famillos</a>
+    <div class="links"><a href="/#features">The app</a><a href="creators.html">For creators</a></div>
+    <a class="btn btn-main" data-install="nav" href="/" style="white-space:nowrap">Get Famillos</a>
+  </div>
+</nav>
+<section style="padding-top:56px">
+  <div class="wrap">
+    <div class="center"><span class="eyebrow">Creator lists</span><h2>Baby picks from parents we trust</h2><p class="lead">Hospital bags, nursery setups and first-year favourites, picked by parenting creators.</p></div>
+    <div class="dir" id="dir"></div>
+    <div class="soon" id="soon" hidden>Our first creator lists are coming soon. <a href="creators.html">Are you a creator?</a></div>
+  </div>
+</section>
+<footer><div class="wrap"><a class="logo" href="/" style="font-size:18px"><img src="assets/logo.svg" alt="" style="width:28px;height:28px">famillos</a><a href="privacy.html">Privacy</a><a data-contact href="mailto:hello@famillos.com">Contact</a></div></footer>
+<script src="config.js"></script>
+<script src="site.js"></script>
+<script src="lists-lib.js"></script>
+<script>
+  // Shows lists you've marked featured = true in the Firebase console (Firestore → publicLists → the list → add field "featured" boolean true).
+  window.FM_READY.then(function (C) {
+    var dir = document.getElementById("dir"), soon = document.getElementById("soon"), FM = window.FM, esc = FM.esc;
+    if (!FM.ready(C)) { soon.hidden = false; return; }
+    fetch(FM.base(C) + ":runQuery?key=" + C.firebase.apiKey, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "publicLists" }], where: { fieldFilter: { field: { fieldPath: "featured" }, op: "EQUAL", value: { booleanValue: true } } }, limit: 48 } })
+    }).then(function (r) { return r.json(); }).then(function (rows) {
+      var lists = (rows || []).filter(function (r) { return r.document; }).map(function (r) { var f = FM.parse(r.document.fields); f.id = r.document.name.split("/").pop(); return f; })
+        .filter(function (f) { return f.type === "creator"; });
+      if (!lists.length) { soon.hidden = false; return; }
+      dir.innerHTML = lists.map(function (f) {
+        var p = FM.json(f.profile, {}), m = FM.json(f.meta, {}), n = FM.json(f.items, []).length;
+        var av = FM.safeImg(p.avatar) ? '<img class="av" src="' + esc(p.avatar) + '" alt="">' : '<div class="av">' + esc((p.name || "?").charAt(0).toUpperCase()) + "</div>";
+        return '<a class="lc" href="list.html?id=' + esc(f.id) + '">' + av + "<h3>" + esc(m.title || f.title) + '</h3><div class="who">' + esc(p.name || "") + (p.handle ? " · " + esc(p.handle) : "") + '</div><div class="n">' + n + " picks →</div></a>";
+      }).join("");
+    }).catch(function () { soon.hidden = false; });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /goodbye.html
+Sitemap: https://famillos.com/sitemap.xml

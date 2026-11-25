@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // A real account (email/password) — not an anonymous registry guest.
+    function member() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // One document per family. The doc ID is the 8-character family code.
+    match /families/{code} {
+      function isMember() {
+        return member() && request.auth.uid in resource.data.members;
+      }
+
+      // Creator makes the family and must be its only member.
+      allow create: if member()
+        && request.resource.data.members == [request.auth.uid]
+        && request.resource.data.keys().hasOnly(['members', 'data', 'updatedAt']);
+
+      // Members can read and update the shared data (but not kick each other out).
+      allow read: if isMember();
+      allow update: if isMember()
+        && request.resource.data.members == resource.data.members
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['data', 'updatedAt']);
+
+      // Joining: a signed-in user who knows the code may ONLY add themselves,
+      // and only while the family has fewer than 2 members.
+      allow update: if member()
+        && !(request.auth.uid in resource.data.members)
+        && resource.data.members.size() < 2
+        && request.resource.data.members == resource.data.members.concat([request.auth.uid])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members']);
+
+      allow delete: if false;
+    }
+
+    // Published lists: gift registries (type "registry", shared by link) and
+    // creator lists (type "creator", public). Anyone with the link can read.
+    // "featured" (shown on famillos.com/lists.html) can only be set by you in the
+    // Firebase console — owners can't feature themselves.
+    match /publicLists/{slug} {
+      function owner() { return get(/databases/$(database)/documents/publicLists/$(slug)).data.owner; }
+      function isRegistry() { return get(/databases/$(database)/documents/publicLists/$(slug)).data.type == 'registry'; }
+
+      allow read: if true;
+      allow create: if member()
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.type in ['registry', 'creator']
+        && !('featured' in request.resource.data)
+        && slug.size() <= 60;
+      allow update: if member()
+        && resource.data.owner == request.auth.uid
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.type in ['registry', 'creator']
+        && request.resource.data.get('featured', false) == resource.data.get('featured', false);
+      allow delete: if member() && resource.data.owner == request.auth.uid;
+
+      // Registry reservations — public part: only "this item is taken".
+      // The doc ID is the item ID, and "create" fails if it already exists,
+      // so two guests can never reserve the same gift.
+      match /claims/{itemId} {
+        allow read: if true;
+        allow create: if request.auth != null && isRegistry()
+          && request.resource.data.keys().hasOnly(['by', 'at'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.at is int;
+        allow delete: if request.auth != null
+          && (resource.data.by == request.auth.uid || owner() == request.auth.uid);
+      }
+
+      // Registry reservations — private part: who reserved it and their message.
+      // Only the registry owner can read these (guests can't see each other's names).
+      match /notes/{itemId} {
+        allow read: if request.auth != null && owner() == request.auth.uid;
+        allow create: if request.auth != null && isRegistry()
+          && request.resource.data.keys().hasOnly(['by', 'name', 'message', 'at'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 60
+          && request.resource.data.message is string && request.resource.data.message.size() <= 300
+          && request.resource.data.at is int;
+        allow delete: if request.auth != null
+          && (resource.data.by == request.auth.uid || owner() == request.auth.uid);
+      }
+    }
+  }
+}

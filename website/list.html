@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baby list — Famillos</title>
+  <meta name="description" content="A baby list made with Famillos.">
+  <meta property="og:title" content="A baby list made with Famillos">
+  <meta property="og:image" content="https://famillos.com/assets/og-image.png">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink: #0f2e38; --muted: #536f7a; --line: #ece3d6; --bg: #fdf8f1; --coral: #ff6f5b; --teal: #1d5266; --teal2: #2e7590; --mint: #16a67a; --sun: #ffb22e; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font: 16px/1.5 "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); min-height: 100vh; }
+    main { max-width: 760px; margin: 0 auto; padding: 22px 16px 90px; }
+    a { color: var(--teal2); }
+    .top { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--teal); font: 600 21px "Fredoka", ui-rounded, system-ui, sans-serif; }
+    .top img { width: 32px; height: 32px; }
+    .hero { margin: 22px 0 18px; border-radius: 26px; padding: 26px 22px; position: relative; overflow: hidden; }
+    .hero.registry { background: radial-gradient(90% 120% at 100% 0%, #ffd9cf 0, transparent 60%), linear-gradient(135deg, #fff1e8, #fde3dc); }
+    .hero.creator { background: radial-gradient(90% 120% at 100% 0%, #cfe7ea 0, transparent 60%), linear-gradient(135deg, #fff6e2, #ffe9d6); }
+    .kicker { font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #b85a3c; }
+    h1 { font-size: clamp(28px, 6vw, 40px); line-height: 1.1; letter-spacing: -.02em; margin: 6px 0 6px; }
+    .sub { color: var(--muted); }
+    .note { margin-top: 14px; background: rgba(255,255,255,.7); border-radius: 16px; padding: 12px 14px; font-size: 15px; white-space: pre-line; }
+    .bar { height: 8px; background: rgba(255,255,255,.75); border-radius: 99px; overflow: hidden; margin-top: 16px; }
+    .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--coral), var(--sun)); border-radius: inherit; }
+    .count { font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+    .creator-row { display: flex; gap: 16px; align-items: center; }
+    .av { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 4px #fff; background: linear-gradient(135deg, var(--coral), var(--sun)); display: grid; place-items: center; color: #fff; font-size: 32px; font-weight: 800; }
+    .handle { color: var(--muted); font-weight: 500; }
+    .badge { display: inline-flex; gap: 6px; align-items: center; margin-top: 12px; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 99px; background: rgba(255,255,255,.8); color: #9a5b00; }
+    .filters { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
+    .filters button { border: 1.5px solid var(--line); background: #fff; border-radius: 99px; padding: 7px 13px; font: 600 13.5px inherit; cursor: pointer; color: var(--ink); }
+    .filters button.on { border-color: var(--coral); background: #fff1ec; }
+    .grid { display: grid; gap: 12px; }
+    .card { display: grid; grid-template-columns: 92px 1fr; gap: 14px; background: #fff; border-radius: 20px; padding: 12px; box-shadow: 0 0 0 1px var(--line), 0 12px 26px -22px rgba(15,46,56,.5); }
+    .card.taken { opacity: .62; }
+    .img { width: 92px; height: 92px; border-radius: 14px; background: #f6f1ea center/contain no-repeat; display: grid; place-items: center; font-size: 30px; }
+    .t { font-weight: 700; line-height: 1.3; }
+    .m { color: var(--muted); font-size: 14px; margin-top: 2px; }
+    .why { font-size: 14.5px; margin-top: 6px; background: #fdf6ec; border-radius: 10px; padding: 7px 10px; }
+    .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 12px; font: 700 14.5px "DM Sans", system-ui, sans-serif; text-decoration: none; border: 0; cursor: pointer; }
+    .btn.main { background: var(--coral); color: #fff; }
+    .btn.ghost { background: #f4efe8; color: var(--ink); }
+    .btn.teal { background: var(--teal); color: #fff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 99px; }
+    .tag.res { background: #fde7e1; color: #c2410c; }
+    .tag.got { background: #d9f4ea; color: var(--mint); }
+    .tag.mine { background: #e8f4f6; color: var(--teal); }
+    .linkish { background: none; border: 0; color: var(--teal2); font: 600 13.5px inherit; cursor: pointer; text-decoration: underline; }
+    .cta { margin-top: 30px; background: var(--teal); color: #fff; border-radius: 24px; padding: 24px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .cta p { flex: 1; min-width: 220px; }
+    .disc { color: var(--muted); font-size: 13px; margin-top: 16px; }
+    .empty { text-align: center; padding: 70px 0; color: var(--muted); }
+    dialog { border: 0; border-radius: 22px; padding: 22px; width: min(420px, calc(100% - 32px)); box-shadow: 0 30px 60px -20px rgba(0,0,0,.45); }
+    dialog::backdrop { background: rgba(15,46,56,.45); }
+    dialog h2 { font-size: 22px; line-height: 1.2; margin-bottom: 4px; }
+    dialog label { display: block; font-size: 13.5px; font-weight: 700; color: var(--muted); margin-top: 12px; }
+    dialog input, dialog textarea { width: 100%; margin-top: 4px; padding: 11px 12px; border-radius: 12px; border: 1.5px solid var(--line); font: 15.5px inherit; background: #fdfbf8; }
+    dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .err { color: #c0392b; font-size: 14px; margin-top: 8px; }
+    @media (max-width: 520px) { .card { grid-template-columns: 70px 1fr; } .img { width: 70px; height: 70px; } }
+  </style>
+</head>
+<body>
+<main>
+  <a class="top" href="/"><img src="assets/logo.svg" alt="">famillos</a>
+  <div id="root"><div class="empty">Loading…</div></div>
+</main>
+
+<dialog id="dlg">
+  <form method="dialog" id="resForm">
+    <h2>Reserve this gift</h2>
+    <p class="m" id="dlgItem"></p>
+    <label>Your name <input name="name" required maxlength="60" autocomplete="name" placeholder="So they know who to thank"></label>
+    <label>A message for them (optional) <textarea name="message" rows="3" maxlength="300" placeholder="Congratulations! 💛"></textarea></label>
+    <p class="err" id="dlgErr"></p>
+    <div class="row"><button type="button" class="btn ghost" id="dlgCancel">Cancel</button><button class="btn main" id="dlgGo">Reserve it</button></div>
+  </form>
+</dialog>
+
+<script src="config.js"></script>
+<script src="site.js"></script>
+<script src="lists-lib.js"></script>
+<script>
+(function () {
+  var root = document.getElementById("root"), FM = window.FM, esc = FM.esc;
+  var id = new URLSearchParams(location.search).get("id") || "";
+  var C = {}, L = null, items = [], claims = {}, filter = "all";
+
+  window.FM_READY.then(function (cfg) {
+    C = cfg || {};
+    if (!/^[a-z0-9-]{3,60}$/.test(id) || !FM.ready(C)) { root.innerHTML = '<div class="empty">This list link is incomplete.</div>'; return; }
+    load();
+  });
+
+  function load() {
+    fetch(FM.base(C) + "/publicLists/" + id + "?key=" + C.firebase.apiKey)
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function (doc) {
+        var f = FM.parse(doc.fields);
+        L = { type: f.type || "creator", title: f.title || "Baby list", country: f.country || "GB", profile: FM.json(f.profile, {}), meta: FM.json(f.meta, {}) };
+        items = FM.json(f.items, []);
+        document.title = L.title + " — Famillos";
+        return L.type === "registry" ? loadClaims() : null;
+      })
+      .then(render)
+      .catch(function () { root.innerHTML = '<div class="empty">We couldn\'t find that list. It may have been taken offline.</div>'; });
+  }
+  function loadClaims() {
+    return fetch(FM.base(C) + "/publicLists/" + id + "/claims?pageSize=300&key=" + C.firebase.apiKey)
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (j) { claims = {}; (j.documents || []).forEach(function (d) { claims[d.name.split("/").pop()] = FM.parse(d.fields); }); });
+  }
+
+  function link(it) {
+    var who = L.type === "creator" ? (L.profile.handle || "creator").replace(/^@/, "") : "registry";
+    return FM.monetize(it.url, C, { own: L.type === "creator" ? it.link : "", subid: (L.type === "creator" ? "c-" : "r-") + who, creator: L.profile.handle });
+  }
+
+  function render() {
+    var reg = L.type === "registry", anyAff = false, me = FM.guestUid();
+    var p = L.profile, m = L.meta;
+    var head;
+    if (reg) {
+      var open = items.filter(function (i) { return !i.done; }), taken = open.filter(function (i) { return claims[i.id]; }).length;
+      var date = m.eventDate ? new Date(m.eventDate + "T12:00").toLocaleDateString(L.country === "US" ? "en-US" : "en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
+      head = '<section class="hero registry"><div class="kicker">🎁 Baby registry</div><h1>' + esc(m.title || L.title) + '</h1>' +
+        '<p class="sub">' + (p.name ? "From " + esc(p.name) : "") + (p.name && date ? " · " : "") + (date ? esc(date) : "") + '</p>' +
+        (m.guestNote ? '<div class="note">' + esc(m.guestNote) + '</div>' : "") +
+        '<div class="bar"><i style="width:' + (open.length ? Math.round(taken / open.length * 100) : 0) + '%"></i></div>' +
+        '<div class="count">' + taken + " of " + open.length + ' gifts reserved · tap <b>Reserve</b> so nobody buys the same thing twice</div></section>';
+    } else {
+      var av = FM.safeImg(p.avatar) ? '<img class="av" src="' + esc(p.avatar) + '" alt="">' : '<div class="av">' + esc((p.name || "?").charAt(0).toUpperCase()) + "</div>";
+      head = '<section class="hero creator"><div class="creator-row">' + av + '<div><div class="kicker" style="color:#9a5b00">⭐ Creator list</div>' +
+        '<div style="font-weight:700;font-size:18px">' + esc(p.name || "") + (p.handle ? ' <span class="handle">' + esc(p.handle) + "</span>" : "") + "</div>" +
+        (p.bio ? '<div class="sub">' + esc(p.bio) + "</div>" : "") + (FM.safe(p.link) ? '<a href="' + esc(p.link) + '" target="_blank" rel="noopener">' + esc(p.link.replace(/^https?:\/\/(www\.)?/, "")) + "</a>" : "") +
+        '</div></div><h1 style="margin-top:16px">' + esc(m.title || L.title) + '</h1><span class="badge" id="affBadge" hidden>Contains affiliate links · #ad</span></section>';
+    }
+
+    var list = items.slice();
+    if (reg) list.sort(function (a, b) { return rank(a) - rank(b); });
+    if (reg && filter === "open") list = list.filter(function (i) { return !i.done && !claims[i.id]; });
+
+    var cards = list.map(function (it) {
+      var l = link(it); if (l.aff) anyAff = true;
+      var c = claims[it.id], mine = c && me && c.by === me, state = "";
+      var buy = l.url ? '<a class="btn ' + (reg && !c && !it.done ? "ghost" : "main") + '" href="' + esc(l.url) + '" target="_blank" rel="noopener sponsored" data-out="' + esc(it.store || "") + '">' + (reg ? "View" : "Shop") + (it.store ? " at " + esc(it.store) : "") + "</a>" : "";
+      if (reg) {
+        if (it.done) state = '<span class="tag got">Already got it 🎉</span>';
+        else if (mine) state = '<span class="tag mine">✓ You reserved this</span>' + buy.replace("btn ghost", "btn main") + '<button class="linkish" data-undo="' + esc(it.id) + '">Undo</button>';
+        else if (c) state = '<span class="tag res">Reserved</span>';
+        else state = '<button class="btn main" data-reserve="' + esc(it.id) + '">🎁 Reserve</button>' + buy;
+      } else state = buy;
+      return '<div class="card' + (reg && (it.done || (c && !mine)) ? " taken" : "") + '"><div class="img" style="' + (FM.safe(it.image) ? "background-image:url('" + esc(it.image) + "')" : "") + '">' + (FM.safe(it.image) ? "" : "🎁") + "</div>" +
+        '<div><div class="t">' + esc(it.title) + '</div><div class="m">' + esc(FM.money(it.price, it.currency, L.country)) + (it.store ? (it.price != null ? " · " : "") + esc(it.store) : "") + "</div>" +
+        (it.note ? '<div class="why">' + (reg ? "💬 " : "") + esc(it.note) + "</div>" : "") +
+        '<div class="acts">' + state + "</div></div></div>";
+    }).join("");
+
+    root.innerHTML = head +
+      (reg ? '<div class="filters"><button data-f="all" class="' + (filter === "all" ? "on" : "") + '">All gifts</button><button data-f="open" class="' + (filter === "open" ? "on" : "") + '">Still available</button></div>' : "") +
+      '<div class="grid">' + (cards || '<div class="empty">' + (filter === "open" ? "Every gift has been reserved. Thank you! 💛" : "This list is empty for now.") + "</div>") + "</div>" +
+      '<div class="cta"><p><b>' + (reg ? "Expecting too?" : "Planning for a baby?") + "</b><br>" + (reg ? "Make your own free baby registry with Famillos." : "Save products from any shop, track costs and share lists — free.") + '</p><a class="btn main" href="/?utm_source=list&utm_campaign=' + (reg ? "registry" : "creator") + '">Try Famillos</a></div>' +
+      '<p class="disc">' + (anyAff ? "Some links on this page are affiliate links: if you buy through them, " + (reg ? "Famillos" : esc(p.name || "the creator") + " or Famillos") + " may earn a small commission at no extra cost to you. " : "") +
+      "Prices and availability can change, so please check on the shop's website. " + '<a href="mailto:hello@famillos.com?subject=Report%20list%20' + esc(id) + '">Report this list</a></p>';
+    var badge = document.getElementById("affBadge"); if (badge && anyAff) badge.hidden = false;
+  }
+  function rank(i) { return i.done ? 3 : claims[i.id] ? (claims[i.id].by === FM.guestUid() ? 0 : 2) : 1; }
+
+  // ── interactions ──
+  var dlg = document.getElementById("dlg"), form = document.getElementById("resForm"), current = null;
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-reserve],[data-undo],[data-f],[data-out]");
+    if (!t) return;
+    if (t.dataset.f) { filter = t.dataset.f; render(); return; }
+    if (t.dataset.out != null) { if (window.fmTrack) fmTrack("outbound_click", { list: id, store: t.dataset.out, type: L.type }); return; }
+    if (t.dataset.reserve) {
+      current = items.find(function (i) { return i.id === t.dataset.reserve; });
+      document.getElementById("dlgItem").textContent = current.title;
+      document.getElementById("dlgErr").textContent = "";
+      try { form.name.value = localStorage.getItem("fm_guest_name") || ""; } catch (err) {}
+      dlg.showModal ? dlg.showModal() : dlg.setAttribute("open", "");
+    }
+    if (t.dataset.undo) undo(t.dataset.undo);
+  });
+  document.getElementById("dlgCancel").onclick = function () { dlg.close(); };
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = form.name.value.trim(), message = form.message.value.trim();
+    if (!name) return;
+    var go = document.getElementById("dlgGo"); go.disabled = true; go.textContent = "Reserving…";
+    try { localStorage.setItem("fm_guest_name", name); } catch (err) {}
+    FM.guest(C).then(function (g) {
+      var docBase = "projects/" + C.firebase.projectId + "/databases/(default)/documents/publicLists/" + id;
+      var at = { integerValue: String(Date.now()) }, by = { stringValue: g.uid };
+      return fetch(FM.base(C).replace(/\/documents$/, "/documents:commit"), {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + g.idToken },
+        body: JSON.stringify({ writes: [
+          { update: { name: docBase + "/claims/" + current.id, fields: { by: by, at: at } }, currentDocument: { exists: false } },
+          { update: { name: docBase + "/notes/" + current.id, fields: { by: by, name: { stringValue: name }, message: { stringValue: message }, at: at } }, currentDocument: { exists: false } }
+        ] })
+      }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error((j.error && j.error.status) || "error"); }); });
+    }).then(function () {
+      claims[current.id] = { by: FM.guestUid(), at: Date.now() };
+      dlg.close(); form.message.value = ""; render();
+      if (window.fmTrack) fmTrack("registry_reserve", { list: id });
+    }).catch(function (err) {
+      var msg = /ALREADY_EXISTS|FAILED_PRECONDITION/.test(err.message) ? "Someone has just reserved this one. Please choose another gift."
+        : /switched off/.test(err.message) ? "Reservations aren't available on this registry yet." : "That didn't work — please try again.";
+      document.getElementById("dlgErr").textContent = msg;
+      if (/ALREADY_EXISTS|FAILED_PRECONDITION/.test(err.message)) loadClaims().then(render);
+    }).finally(function () { go.disabled = false; go.textContent = "Reserve it"; });
+  });
+
+  function undo(itemId) {
+    FM.guest(C).then(function (g) {
+      var docBase = "projects/" + C.firebase.projectId + "/databases/(default)/documents/publicLists/" + id;
+      return fetch(FM.base(C).replace(/\/documents$/, "/documents:commit"), {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + g.idToken },
+        body: JSON.stringify({ writes: [{ delete: docBase + "/claims/" + itemId }, { delete: docBase + "/notes/" + itemId }] })
+      });
+    }).then(function () { delete claims[itemId]; render(); });
+  }
+})();
+</script>
+</body>
+</html>
