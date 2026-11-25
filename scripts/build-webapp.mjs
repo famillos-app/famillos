@@ -21,7 +21,7 @@ let html = readFileSync(join(src, "sidepanel.html"), "utf8");
 html = html
   .replace('<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     `<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#1d5266">
+  <meta name="theme-color" content="#0e433f">
   <link rel="canonical" href="https://famillos.com/app/">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -42,7 +42,7 @@ writeFileSync(join(out, "manifest.webmanifest"), JSON.stringify({
   scope: "./",
   display: "standalone",
   background_color: "#f8f2ea",
-  theme_color: "#1d5266",
+  theme_color: "#0e433f",
   icons: [
     { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
     { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
@@ -56,7 +56,7 @@ writeFileSync(join(out, "manifest.webmanifest"), JSON.stringify({
 // Offline app shell: cache our own files, always go to the network for APIs (sync, maps, deals).
 const shell = ["./", "index.html", "sidepanel.css", "sidepanel.js", "config.js", "manifest.webmanifest",
   ...["platform", "store", "sync", "locale", "extract", "fuzzy", "milestones", "deals", "places", "classes", "remote"].map((m) => `lib/${m}.js`),
-  "icons/icon48.png", "icons/icon128.png", "icons/icon-192.png"];
+  "icons/icon48.png", "icons/icon128.png", "icons/icon-192.png", "icons/wordmark.svg", "icons/wordmark-light.svg"];
 writeFileSync(join(out, "sw.js"), `const CACHE = "famillos-${version}-${Date.now()}";
 const SHELL = ${JSON.stringify(shell)};
 self.addEventListener("install", (e) => e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())));

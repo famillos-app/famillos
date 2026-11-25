@@ -55,11 +55,11 @@ function init(C) {
       var bar = document.createElement("div");
       bar.className = "consent";
       bar.innerHTML = '<p>We use cookies to understand which ads bring families to Famillos. OK with that? <a href="privacy.html">Privacy</a></p><div><button data-c="no">No thanks</button><button data-c="yes">Accept</button></div>';
-      bar.style.cssText = "position:fixed;left:16px;right:16px;bottom:16px;z-index:100;max-width:640px;margin:0 auto;background:#0f2e38;color:#fff;border-radius:18px;padding:14px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;box-shadow:0 20px 40px -16px rgba(0,0,0,.5);font-size:14.5px";
+      bar.style.cssText = "position:fixed;left:16px;right:16px;bottom:16px;z-index:100;max-width:640px;margin:0 auto;background:#0c2f2b;color:#fff;border-radius:18px;padding:14px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;box-shadow:0 20px 40px -16px rgba(0,0,0,.5);font-size:14.5px";
       bar.querySelector("p").style.cssText = "flex:1;min-width:220px";
       bar.querySelector("a").style.color = "#ffd166";
       bar.querySelectorAll("button").forEach(function (b) {
-        b.style.cssText = "border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;margin-left:6px;" + (b.dataset.c === "yes" ? "background:#ff6f5b;color:#fff" : "background:rgba(255,255,255,.12);color:#fff");
+        b.style.cssText = "border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;margin-left:6px;" + (b.dataset.c === "yes" ? "background:#dc6b42;color:#fff" : "background:rgba(255,255,255,.12);color:#fff");
         b.onclick = function () { try { localStorage.setItem("fm_consent", b.dataset.c); } catch (e) {} bar.remove(); if (b.dataset.c === "yes") loadAnalytics(); };
       });
       document.body.appendChild(bar);

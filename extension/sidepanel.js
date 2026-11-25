@@ -140,8 +140,7 @@ function renderHeader() {
   const st = ui.sync.status;
   const label = st === "ok" ? "Synced with " + nameOf(partner()) : st === "busy" ? "Syncing…" : st === "err" ? "Sync problem — tap ⚙" : canSync() ? "Cloud sync on" : solo() ? "Just you" : "On this device";
   el.innerHTML = `
-    <img src="icons/icon48.png" alt="">
-    <div class="brand"><b class="wordmark">famillos</b><small><span class="dot ${st === "ok" ? "ok" : st === "busy" ? "busy" : st === "err" ? "err" : ""}"></span>${esc(S.profile.household || "Your family")} · ${esc(label)}</small></div>
+    <div class="brand"><picture><source srcset="icons/wordmark-light.svg" media="(prefers-color-scheme: dark)"><img class="wm" src="icons/wordmark.svg" alt="famillos"></picture><small><span class="dot ${st === "ok" ? "ok" : st === "busy" ? "busy" : st === "err" ? "err" : ""}"></span>${esc(S.profile.household || "Your family")} · ${esc(label)}</small></div>
     <button class="icon-btn" data-act="openSettings" title="Settings" aria-label="Settings">${icon("settings")}</button>`;
 }
 
@@ -864,8 +863,8 @@ function renderOnboarding() {
   if (step === 0) return `
     <div class="onboard">
       ${dots}
-      <img class="logo" src="icons/icon128.png" alt="">
-      <h1><span class="wordmark-lg">famillos</span><br>Baby prep, <span>sorted.</span></h1>
+      <picture><source srcset="icons/wordmark-light.svg" media="(prefers-color-scheme: dark)"><img class="wm-lg" src="icons/wordmark.svg" alt="famillos"></picture>
+      <h1>Baby prep, <span>sorted.</span></h1>
       <p class="muted">Your baby shopping list, spending tracker, to-dos and local activities — on your own or with a co-parent.</p>
       <div class="stack">
         ${[["🛍️", "#ffe4de", IS_EXTENSION ? "Clip from any store" : "Save anything you find", "Name, price and photo in one place."], ["💸", "#d8f3e9", "Track & split costs", "Keep a baby budget, or split costs with a co-parent."], ["📍", "#dceef9", "Find local activities", "Soft play, swimming, music classes, nurseries."], ["🏷️", "#fff1d2", "Deals for your stage", "Picks matched to your due date or baby's age."]]

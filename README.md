@@ -71,5 +71,6 @@ Result: `https://famillos.com` (site), `/app/` (phone app), `/privacy.html`, `/c
 ## Email on your domain
 Set up free forwarding so `hello@`, `privacy@` and `support@famillos.com` arrive in your normal inbox. Options: Cloudflare Email Routing (if DNS is on Cloudflare), ImprovMX, or your registrar's own forwarding. Then add "Send mail as" in Gmail so you can reply from it. You'll use these addresses for the Chrome Web Store, Firebase, Awin and Amazon.
 
-## Swapping in the final logo
-Save the final square logo as `website/assets/logo.svg`, then run `node scripts/make-icons.mjs` (after `npm i sharp`) to regenerate every icon. Or send it to Claude with your checkpoint message.
+## Brand & logo
+Brand files live in `brand/`: the original logo, the clean `wordmark.svg` / `wordmark-light.svg` (for dark backgrounds), `mark.svg` (the two figures) and the app-icon tiles. Colours: deep teal `#0e433f`, coral `#d57449` (buttons use `#dc6b42`), peach `#ee916c`, sunshine `#f8b823`, cream `#fbf5ee`.
+To change the icons later, edit the files in `brand/` and run `node scripts/make-icons.mjs` (after `npm i sharp`), or send the new logo to Claude.
