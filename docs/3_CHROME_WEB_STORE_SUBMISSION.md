@@ -38,7 +38,7 @@ Everything you need to paste into the Developer Dashboard. Review usually takes 
 Famillos is the shared baby-prep workspace that lives right in your browser's side panel. Built for expecting and new parents who are tired of links lost in group chats and "wait, who paid for the crib?"
 
 🛍️ CLIP FROM ANY STORE
-Open Famillos on any product page — Target, Amazon, Walmart, Etsy and thousands more — and it fills in the name, price and photo for you. Or right-click → Save to Famillos.
+Turn on product detection and a "Save to Famillos" button appears on product pages — Amazon, John Lewis, Target, Walmart, Etsy and thousands more. One tap saves the name, price and photo to the list you choose. Or open the side panel, or right-click → Save to Famillos.
 • Duplicate alerts so you don't buy the same thing twice
 • See when an item's price has dropped since you saved it
 
@@ -74,7 +74,7 @@ Open the free Famillos web app on your phone and add it to your home screen.
 
 PRIVACY FIRST
 • Works without an account — data stays on your device
-• Reads a page only when you open the panel or choose "Save to Famillos"
+• Product detection is optional and checks pages on your device; nothing is sent anywhere unless you save
 • No ads, no selling data, no browsing history collected
 
 AFFILIATE DISCLOSURE
@@ -107,12 +107,12 @@ famillos.com
 | `sidePanel` | The entire user interface is shown in Chrome's side panel next to the page the user is shopping on. |
 | `storage` | Saves the user's lists, expenses, tasks and settings locally so they persist between sessions. |
 | `activeTab` | When the user opens the panel or chooses "Save to Famillos", reads the current product page to fill in the item name, price and image. |
-| `scripting` | Runs a small read-only function on the current tab (only after the user's action or granted permission) to extract product details or an order total. |
+| `scripting` | Runs a small read-only function on the current tab (only after the user's action or granted permission) to extract product details or an order total, and registers the optional on-page Save button once the user allows product detection. |
 | `contextMenus` | Adds a "Save to Famillos list" right-click option. |
 | `alarms` | Checks once every 15 minutes for tasks due today and for new items added by the user's partner. |
 | `notifications` | Shows task reminders, co-parent activity notices and the "order detected — add to expenses?" prompt. |
 | Activities (no permission needed) | Map searches call public OpenStreetMap APIs with the area the user types. No geolocation permission is requested. |
-| Optional host permission `https://*/*` | Requested only when the user taps "Allow on shopping sites". Lets Famillos read product details on whichever store the user is browsing (stores vary, so it can't be a fixed list) and detect order-confirmation pages so the user can add the total to shared expenses. Can be turned off in Settings. |
+| Optional host permission `https://*/*` | Requested only when the user taps "Allow on shopping sites". It lets Famillos (1) show a small "Save to Famillos" button on product pages, which the user taps to save the product to their list; (2) read product details on whichever store the user is browsing, since stores vary and can't be a fixed list; and (3) detect order-confirmation pages so the user can add the total to shared expenses. Page checks run locally; nothing is sent anywhere unless the user saves. The button can be switched off or hidden per site, and the permission removed, in Settings. |
 
 **Remote code:** *No, I am not using remote code.* (Deals, activities and settings load from JSON data files on famillos.com; no scripts are fetched.)
 

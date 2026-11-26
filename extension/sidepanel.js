@@ -203,7 +203,7 @@ function viewClip() {
   else if (c.status === "noperm") return `
     <div class="card empty">
       <span class="big">🛍️</span><b>Clip products in one tap</b>
-      <p class="small">Allow Famillos to read the product page you're looking at — it fills in the name, price and photo for you. We only read the page when you open this tab.</p>
+      <p class="small">Allow Famillos on shopping sites and a <b>Save to Famillos</b> button appears on product pages. One tap fills in the name, price and photo. Pages are checked on your device, never sent anywhere.</p>
       <div class="stack" style="margin-top:14px">
         <button class="btn primary block" data-act="grantPerm">${icon("lock", "sm")} Allow on shopping sites</button>
         <button class="btn ghost block" data-act="manualClip">Type it in instead</button>
@@ -841,8 +841,10 @@ function renderSettings() {
       ${IS_EXTENSION ? `
       <h4>Product detection</h4>
       <div class="card stack">
-        <div class="small muted">Lets Famillos read the shopping page you're on to fill in product details and spot order confirmations. Nothing is read in the background except order-confirmation pages.</div>
+        <div class="small muted">Lets Famillos spot product pages and show a <b>Save to Famillos</b> button on the right of the page, fill in product details, and offer to log order confirmations. Pages are checked on your device; nothing is sent anywhere unless you save.</div>
         <div class="actions"><button class="btn sm soft" data-act="grantPerm">Allow on shopping sites</button><button class="btn sm ghost" data-act="revokePerm">Turn off</button></div>
+        <label class="check"><input type="checkbox" id="clipBtnPref" ${ui.clipBtn !== false ? "checked" : ""}> Show the Save button on product pages</label>
+        ${ui.clipHidden ? `<button class="btn sm ghost" data-act="resetHidden">Show it again on ${ui.clipHidden} hidden site${ui.clipHidden > 1 ? "s" : ""}</button>` : ""}
       </div>` : ""}
 
       <h4>Your data</h4>
@@ -933,10 +935,11 @@ const A = {
   detect, manualClip() { ui.clip.status = "page"; ui.clip.data = { listId: ui.listId }; renderView(); $(".title-in")?.focus(); },
   async grantPerm() {
     const ok = await chrome.permissions.request({ origins: ["https://*/*"] });
-    toast(ok ? "Product detection is on ✨" : "No problem — you can type items in manually");
+    toast(ok ? "Done ✨ Look for the Famillos button on product pages" : "No problem — you can type items in manually");
     if (ok) { A.closeSheet(); ui.view = "clip"; render(); detect(); }
   },
   async revokePerm() { await chrome.permissions.remove({ origins: ["https://*/*"] }); toast("Product detection turned off"); },
+  async resetHidden() { const p = (await chrome.storage.local.get("fm_clip_prefs")).fm_clip_prefs || {}; await chrome.storage.local.set({ fm_clip_prefs: { ...p, hidden: {} } }); ui.clipHidden = 0; renderSheet(); toast("The Save button is back on every shop"); },
   clipList(el) { ui.clip.data.listId = el.dataset.id; ui.clip.dirty = true; renderView(); },
   saveClip() {
     const it = clipToItem(); if (!it) return;
@@ -1264,6 +1267,13 @@ document.addEventListener("change", async (e) => {
     try { ui.ls.avatar = await resizeAvatar(e.target.files[0]); renderSheet(); } catch (err) { toast(err.message); }
     return;
   }
+  if (e.target.id === "clipBtnPref") {
+    const p = (await chrome.storage.local.get("fm_clip_prefs")).fm_clip_prefs || {};
+    ui.clipBtn = e.target.checked;
+    await chrome.storage.local.set({ fm_clip_prefs: { ...p, enabled: e.target.checked } });
+    toast(e.target.checked ? "Save button on" : "Save button off");
+    return;
+  }
   if (e.target.id !== "importFile" || !e.target.files[0]) return;
   try {
     const data = normalize(JSON.parse(await e.target.files[0].text()));
@@ -1276,9 +1286,10 @@ document.addEventListener("change", async (e) => {
 storage.onChanged((changes, area) => {
   if (area === "local" && changes[STATE_KEY] && changes[STATE_KEY].newValue) {
     const next = normalize(changes[STATE_KEY].newValue);
-    if (fingerprint(next) !== fingerprint(S)) { S = next; if (!ui.sheet) render(); else { renderHero(); renderView(); renderTabs(); } }
+    if (fingerprint(next) !== fingerprint(S)) { S = next; if (!ui.sheet) render(); else { renderHero(); renderView(); renderTabs(); } schedulePublish(); }
   }
   if (area === "local" && changes[DEVICE_KEY]) D = { ...D, ...changes[DEVICE_KEY].newValue };
+  if (area === "local" && changes.fm_clip_prefs) { const cp = changes.fm_clip_prefs.newValue || {}; ui.clipBtn = cp.enabled !== false; ui.clipHidden = Object.values(cp.hidden || {}).filter((t) => t > Date.now()).length; }
   if (area === "local" && "ps_receipt" in changes) { ui.receipt = changes.ps_receipt.newValue || null; if (D.onboarded) { renderTabs(); if (ui.view === "money") renderView(); } }
   if (area === "session" && changes.clipRequest && changes.clipRequest.newValue) { ui.view = "clip"; render(); detect(); }
 });
@@ -1294,6 +1305,7 @@ if (IS_EXTENSION) {
   ({ state: S, device: D } = await load());
   if (D.onboarded && !S.profile.country) { S.profile.country = guessCountry(); await saveState(S); }
   ui.receipt = (await storage.local.get("ps_receipt")).ps_receipt || null;
+  if (IS_EXTENSION) { const cp = (await storage.local.get("fm_clip_prefs")).fm_clip_prefs || {}; ui.clipBtn = cp.enabled !== false; ui.clipHidden = Object.values(cp.hidden || {}).filter((t) => t > Date.now()).length; }
   ui.listId = (live(S.lists)[0] || {}).id;
   const req = (await storage.session.get("clipRequest").catch(() => ({}))).clipRequest;
   if (req && Date.now() - req.t < 10000) ui.view = "clip";

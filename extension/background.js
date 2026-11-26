@@ -3,7 +3,8 @@
 import { CONFIG, isSet } from "./config.js";
 import { load, saveState, saveDevice, live, uid, other } from "./lib/store.js";
 import { syncNow, syncAvailable, fetchClaims } from "./lib/sync.js";
-import { extractReceipt, RECEIPT_URL } from "./lib/extract.js";
+import { extractReceipt, extractProduct, RECEIPT_URL } from "./lib/extract.js";
+import { findDuplicate, normUrl } from "./lib/fuzzy.js";
 import { countryOf, money } from "./lib/locale.js";
 
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(console.error);
@@ -16,6 +17,98 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.runtime.setUninstallURL(CONFIG.siteUrl + "/goodbye.html?utm_source=uninstall");
 });
 chrome.runtime.onStartup.addListener(() => chrome.alarms.create("tick", { periodInMinutes: 15, delayInMinutes: 1 }));
+
+// ── On-page "Save to Famillos" button ──
+// The content script is registered only while the user has allowed product detection
+// (optional host permission) and has the Save button switched on in Settings.
+const ALL_SITES = { origins: ["https://*/*"] };
+const CLIP_ID = "fm-clip";
+const prefs = async () => ({ enabled: true, hidden: {}, ...((await chrome.storage.local.get("fm_clip_prefs")).fm_clip_prefs || {}) });
+
+async function syncClipScript() {
+  try {
+    const want = (await chrome.permissions.contains(ALL_SITES)) && (await prefs()).enabled;
+    const have = (await chrome.scripting.getRegisteredContentScripts({ ids: [CLIP_ID] })).length > 0;
+    if (want && !have) {
+      await chrome.scripting.registerContentScripts([{ id: CLIP_ID, matches: ["https://*/*"], excludeMatches: ["https://famillos.com/*", "https://*.famillos.com/*"], js: ["content/clip-button.js"], runAt: "document_idle", persistAcrossSessions: true }]);
+      // Show it straight away on the tab the user is looking at.
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      if (tab && /^https:/.test(tab.url || "")) chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content/clip-button.js"] }).catch(() => {});
+    } else if (!want && have) {
+      await chrome.scripting.unregisterContentScripts({ ids: [CLIP_ID] });
+    }
+  } catch (e) { console.warn("clip button", e.message); }
+}
+chrome.runtime.onInstalled.addListener(syncClipScript);
+chrome.runtime.onStartup.addListener(syncClipScript);
+chrome.permissions.onAdded.addListener(syncClipScript);
+chrome.permissions.onRemoved.addListener(syncClipScript);
+chrome.storage.onChanged.addListener((c, area) => { if (area === "local" && c.fm_clip_prefs) syncClipScript(); });
+
+const safeHttp = (u) => (typeof u === "string" && /^https?:\/\//i.test(u) ? u.slice(0, 2000) : "");
+
+chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (!msg || typeof msg.type !== "string" || !msg.type.startsWith("fm:") || !sender.tab || sender.id !== chrome.runtime.id) return;
+  const tab = sender.tab;
+  (async () => {
+    if (msg.type === "fm:shouldShow") {
+      const p = await prefs();
+      const until = p.hidden[msg.host] || 0;
+      return { show: p.enabled && until < Date.now() };
+    }
+    if (msg.type === "fm:hideHost") {
+      const p = await prefs();
+      p.hidden = { ...p.hidden, [String(msg.host).slice(0, 200)]: Date.now() + 90 * 864e5 }; // 90 days
+      await chrome.storage.local.set({ fm_clip_prefs: p });
+      return { ok: true };
+    }
+    if (msg.type === "fm:openPanel") {
+      try { await chrome.sidePanel.open({ tabId: tab.id }); return { ok: true }; }
+      catch (e) { try { await chrome.sidePanel.open({ windowId: tab.windowId }); return { ok: true }; } catch (e2) { return { ok: false }; } }
+    }
+    const { state, device } = await load();
+    if (msg.type === "fm:extract") {
+      if (!device.onboarded) return { onboarded: false };
+      const [res] = await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] }, func: extractProduct });
+      const d = (res && res.result) || {};
+      const c = countryOf(state.profile.country);
+      const currency = d.currency || c.currency;
+      const lists = live(state.lists).map((l) => ({ id: l.id, name: l.name, emoji: l.emoji }));
+      const items = live(state.items);
+      const same = d.url && items.find((i) => i.url && normUrl(i.url) === normUrl(d.url));
+      const fuzzy = !same && d.title ? findDuplicate(d.title, items) : null;
+      const dupItem = same || (fuzzy && fuzzy.item);
+      const dl = dupItem && lists.find((l) => l.id === dupItem.listId);
+      return {
+        onboarded: true, lists, lastListId: device.lastClipList && lists.some((l) => l.id === device.lastClipList) ? device.lastClipList : (lists[0] || {}).id,
+        product: { ...d, currency, priceText: d.price != null ? money(d.price, currency, c.locale) : "" },
+        duplicate: dupItem ? { title: dupItem.title, listName: dl ? dl.name : "a list" } : null
+      };
+    }
+    if (msg.type === "fm:save") {
+      if (!device.onboarded) return { ok: false };
+      const p = msg.product || {};
+      const lists = live(state.lists);
+      const list = lists.find((l) => l.id === msg.listId) || lists[0];
+      const title = String(p.title || "").replace(/\s+/g, " ").trim().slice(0, 160);
+      if (!list || !title) return { ok: false };
+      const price = typeof p.price === "number" && p.price > 0 && p.price < 100000 ? p.price : null;
+      const t = Date.now();
+      state.items.unshift({
+        id: uid(), listId: list.id, title, price, currency: String(p.currency || countryOf(state.profile.country).currency).toUpperCase().slice(0, 3),
+        store: String(p.store || "").slice(0, 60), url: safeHttp(p.url) || safeHttp(tab.url), image: safeHttp(p.image), note: "", done: false,
+        addedBy: device.slot, createdAt: t, updatedAt: t, priceHistory: price == null ? [] : [{ p: price, t }]
+      });
+      await saveState(state);
+      await saveDevice({ ...device, lastClipList: list.id });
+      if (syncAvailable() && device.auth) syncNow().catch(() => {});
+      const partner = state.profile.solo || !device.familyCode ? "" : (state.profile.members[other(device.slot)] || {}).name || "";
+      return { ok: true, listName: list.name, partner };
+    }
+    return null;
+  })().then(reply, (e) => { console.warn("fm msg", e.message); reply(null); });
+  return true;
+});
 
 // Right-click → open the panel on the Clip tab (the click also grants activeTab).
 chrome.contextMenus.onClicked.addListener((info, tab) => {
